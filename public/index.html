@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordle Clone - Register & Play</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 100%);
+            color: white;
+            font-family: 'Clear Sans', 'Helvetica Neue', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-size: 3.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .header p {
+            font-size: 1.1em;
+            color: #aaa;
+        }
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+        .rules-section {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 30px;
+            animation: slideInLeft 0.5s ease;
+        }
+        .rules-section h2 {
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            color: #6aaa64;
+        }
+        .rules-section ul {
+            list-style: none;
+            line-height: 1.8;
+        }
+        .rules-section li {
+            margin-bottom: 15px;
+            padding-left: 25px;
+            position: relative;
+            color: #ddd;
+        }
+        .rules-section li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #6aaa64;
+            font-weight: bold;
+        }
+        .register-section {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 30px;
+            animation: slideInRight 0.5s ease;
+        }
+        .register-section h2 {
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            color: #6aaa64;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #ddd;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #3c3c3c;
+            background: #1a1a1a;
+            border-radius: 6px;
+            color: white;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #6aaa64;
+        }
+        .form-group input::placeholder {
+            color: #666;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6aaa64, #5a9a54);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(106, 170, 100, 0.4);
+        }
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        .error-msg {
+            color: #ff4757;
+            font-size: 0.9em;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255, 71, 87, 0.1);
+            border-left: 3px solid #ff4757;
+            border-radius: 4px;
+            display: none;
+        }
+        .success-msg {
+            color: #6aaa64;
+            font-size: 0.9em;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(106, 170, 100, 0.1);
+            border-left: 3px solid #6aaa64;
+            border-radius: 4px;
+            display: none;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .spinner {
+            border: 3px solid #3c3c3c;
+            border-top: 3px solid #6aaa64;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .header h1 {
+                font-size: 2.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>WORDLE</h1>
+            <p>Guess the word in 6 tries</p>
+        </div>
+
+        <div class="content">
+            <!-- Rules Section -->
+            <div class="rules-section">
+                <h2>How to Play</h2>
+                <ul>
+                    <li><strong>Guess the word:</strong> You have 6 chances to guess a random 5-letter word</li>
+                    <li><strong>Green:</strong> The letter is in the word and in the correct position</li>
+                    <li><strong>Yellow:</strong> The letter is in the word but in the wrong position</li>
+                    <li><strong>Grey:</strong> The letter is not in the word</li>
+                    <li><strong>Submit:</strong> Press Enter after entering 5 letters</li>
+                    <li><strong>Delete:</strong> Use Backspace to delete the last letter</li>
+                    <li><strong>Score:</strong> Gain points based on attempts and time taken</li>
+                    <li><strong>Track Progress:</strong> View your stats and top scores on the dashboard</li>
+                </ul>
+            </div>
+
+            <!-- Registration Form -->
+            <div class="register-section">
+                <h2>Join the Game</h2>
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username" 
+                            placeholder="Choose a username"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            placeholder="your@email.com"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            placeholder="Minimum 6 characters"
+                            required
+                        >
+                    </div>
+
+                    <button type="submit" class="submit-btn">Start Playing</button>
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                    </div>
+                    <div class="error-msg" id="errorMsg"></div>
+                    <div class="success-msg" id="successMsg"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('registerForm');
+        const errorMsg = document.getElementById('errorMsg');
+        const successMsg = document.getElementById('successMsg');
+        const loading = document.getElementById('loading');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+
+            if (!username || !email || !password) {
+                errorMsg.textContent = 'All fields are required';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            if (password.length < 6) {
+                errorMsg.textContent = 'Password must be at least 6 characters';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            loading.style.display = 'block';
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    successMsg.textContent = 'Registration successful! Redirecting...';
+                    successMsg.style.display = 'block';
+                    setTimeout(() => window.location.href = data.redirect, 1500);
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (err) {
+                errorMsg.textContent = err.message || 'Registration failed. Please try again.';
+                errorMsg.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
